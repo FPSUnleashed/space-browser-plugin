@@ -141,10 +141,47 @@ class SpaceBrowser(Tool):
 
                 return Response(message="\n".join(msg_parts), break_loop=False)
             else:
-                return Response(
-                    message=f"Space Agent task failed: {result.get('error', 'Unknown error')}",
-                    break_loop=False,
-                )
+                # Task failed or crashed - show partial results if available
+                step_log = result.get("step_log", [])
+                steps = result.get("steps", 0)
+                error = result.get("error", "Unknown error")
+                is_partial = result.get("partial", False)
+
+                msg_parts = []
+                if is_partial:
+                    msg_parts.append(f"⚠️ **Space Agent crashed at step {steps}:** {error}")
+                    msg_parts.append("")
+                    msg_parts.append("### Partial Steps (before crash)")
+                else:
+                    msg_parts.append(f"**Space Agent task failed:** {error}")
+                    if step_log:
+                        msg_parts.append("")
+                        msg_parts.append("### Steps")
+
+                if step_log:
+                    for entry in step_log:
+                        step_num = entry.get("step", "?")
+                        entry_type = entry.get("type", "")
+
+                        if entry_type == "thinking":
+                            reasoning = entry.get("reasoning", "")
+                            if reasoning:
+                                msg_parts.append(f"**Step {step_num} — Thinking:** {reasoning[:500]}")
+                        elif entry_type == "code":
+                            block_num = entry.get("block", "?")
+                            code = entry.get("code", "")
+                            parts = [f"**Step {step_num} — Code Block {block_num}:**"]
+                            if code:
+                                parts.append(f"```javascript\n{code[:1000]}\n```")
+                            if entry.get("output"):
+                                parts.append(f"Output: `{entry['output'][:500]}`")
+                            if entry.get("result"):
+                                parts.append(f"Result: `{entry['result'][:500]}`")
+                            if entry.get("error"):
+                                parts.append(f"Error: `{entry['error'][:500]}`")
+                            msg_parts.append("\n".join(parts))
+
+                return Response(message="\n".join(msg_parts), break_loop=False)
         except Exception as e:
             import traceback
             tb = traceback.format_exc()
