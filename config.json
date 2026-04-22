@@ -1,0 +1,10 @@
+{
+  "api_key": "39abc8e979a04175bda03536a60b122c.COE6UxZCq4fndZQX",
+  "api_url": "https://api.z.ai/api/coding/paas/v4/chat/completions",
+  "default_model": "glm-5.1",
+  "space_agent_url": "http://localhost:3000",
+  "max_steps": 15,
+  "timeout": 300,
+  "auto_start": true,
+  "space_agent_path": "/a0/usr/projects/space_agent_plugin/space-agent"
+}

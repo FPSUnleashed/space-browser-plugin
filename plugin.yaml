@@ -1,0 +1,10 @@
+name: space_browser
+title: Space Browser
+description: Browser automation via Space Agent - fast, browser-native alternative to browser_agent.
+version: 0.1.0
+author: FPS Unleashed
+license: MIT
+settings_sections: [agent]
+per_project_config: false
+per_agent_config: false
+always_enabled: false

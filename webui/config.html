@@ -1,0 +1,138 @@
+<div x-data="spaceBrowserConfig()">
+  <div class="space-y-4">
+    <h3 class="text-lg font-semibold">Space Browser Settings</h3>
+    <p class="text-sm text-gray-500">Configure the Space Agent integration for browser automation.</p>
+
+    <!-- API Key -->
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Z.AI API Key</span>
+      </label>
+      <input type="password" x-model="config.api_key" class="input input-bordered w-full" placeholder="Your Z.AI API key" />
+    </div>
+
+    <!-- API URL -->
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">LLM API URL</span>
+      </label>
+      <input type="text" x-model="config.api_url" class="input input-bordered w-full" placeholder="https://api.z.ai/api/coding/paas/v4/chat/completions" />
+    </div>
+
+    <!-- Default Model -->
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Default Model</span>
+      </label>
+      <input type="text" x-model="config.default_model" class="input input-bordered w-full" placeholder="glm-5.1" />
+      <label class="label"><span class="label-text-alt">glm-5.1, glm-turbo, etc.</span></label>
+    </div>
+
+    <!-- Space Agent URL -->
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Space Agent URL</span>
+      </label>
+      <input type="text" x-model="config.space_agent_url" class="input input-bordered w-full" placeholder="http://localhost:3000" />
+    </div>
+
+    <!-- Max Steps -->
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Max Steps</span>
+      </label>
+      <input type="number" x-model="config.max_steps" class="input input-bordered w-full" min="1" max="50" />
+    </div>
+
+    <!-- Auto Start -->
+    <div class="form-control">
+      <label class="label cursor-pointer">
+        <span class="label-text">Auto Start Server</span>
+        <input type="checkbox" x-model="config.auto_start" class="checkbox checkbox-primary" />
+      </label>
+    </div>
+
+    <!-- Space Agent Path -->
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Space Agent Path (custom installation)</span>
+      </label>
+      <input type="text" x-model="config.space_agent_path" class="input input-bordered w-full" placeholder="/path/to/space-agent" />
+    </div>
+
+    <!-- Timeout -->
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Timeout (seconds)</span>
+      </label>
+      <input type="number" x-model="config.timeout" class="input input-bordered w-full" min="30" max="900" />
+    </div>
+
+    <!-- Save Button -->
+    <button @click="save()" class="btn btn-primary" :disabled="saving">
+      <span x-show="!saving">Save Settings</span>
+      <span x-show="saving">Saving...</span>
+    </button>
+
+    <!-- Status -->
+    <div x-show="status" x-text="status" class="text-sm" :class="statusSuccess ? 'text-green-500' : 'text-red-500'"></div>
+  </div>
+</div>
+
+<script>
+function spaceBrowserConfig() {
+  return {
+    config: {
+      api_key: '',
+      api_url: 'https://api.z.ai/api/coding/paas/v4/chat/completions',
+      default_model: 'glm-5.1',
+      space_agent_url: 'http://localhost:3000',
+      max_steps: 15,
+      timeout: 300,
+      auto_start: true,
+      space_agent_path: ''
+    },
+    saving: false,
+    status: '',
+    statusSuccess: false,
+
+    async init() {
+      try {
+        const resp = await fetch('/api/plugins/space_browser/settings');
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.config) {
+            Object.assign(this.config, data.config);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load Space Browser settings:', e);
+      }
+    },
+
+    async save() {
+      this.saving = true;
+      this.status = '';
+      try {
+        const resp = await fetch('/api/plugins/space_browser/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: this.config })
+        });
+        if (resp.ok) {
+          this.status = 'Settings saved successfully.';
+          this.statusSuccess = true;
+        } else {
+          this.status = 'Failed to save settings.';
+          this.statusSuccess = false;
+        }
+      } catch (e) {
+        this.status = 'Error: ' + e.message;
+        this.statusSuccess = false;
+      } finally {
+        this.saving = false;
+      }
+    }
+  };
+}
+</script>

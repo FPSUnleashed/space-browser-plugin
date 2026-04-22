@@ -1,0 +1,8 @@
+space_agent_url: "http://localhost:3000"
+api_url: "https://api.z.ai/api/coding/paas/v4/chat/completions"
+api_key: ""
+default_model: "glm-5.1"
+max_steps: 15
+timeout: 300
+auto_start: true
+space_agent_path: ""
