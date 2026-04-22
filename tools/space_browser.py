@@ -23,11 +23,15 @@ class SpaceBrowser(Tool):
                 break_loop=False,
             )
 
-        # Load plugin config
+        # Load plugin config using proper Agent Zero API
         try:
-            config = self.agent.config.get("plugins", {}).get("space_browser", {})
+            from helpers.plugins import get_plugin_config
+            config = get_plugin_config("space_browser", agent=self.agent) or {}
         except Exception:
-            config = {}
+            try:
+                config = self.agent.config.get("plugins", {}).get("space_browser", {})
+            except Exception:
+                config = {}
 
         space_agent_url = config.get("space_agent_url", "http://localhost:3000")
         api_url = config.get(
